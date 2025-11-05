@@ -12,6 +12,10 @@ class MockIcloudStorageSyncPlatform
   Future<String?> getPlatformVersion() => Future.value('42');
 
   @override
+  Future<String?> getContainerUrl({required String containerId}) =>
+      throw UnimplementedError();
+
+  @override
   Future<void> delete(
       {required String containerId, required String relativePath}) {
     throw UnimplementedError();

@@ -19,6 +19,13 @@ class MethodChannelIcloudStorageSync extends IcloudStorageSyncPlatform {
     return version;
   }
 
+  @override
+  Future<String?> getContainerUrl({required String containerId}) async {
+    return await methodChannel.invokeMethod<String>('getICloudContainerUrl', {
+      'containerId': containerId,
+    });
+  }
+
   /// Gathers iCloud files and their metadata.
   ///
   /// [containerId] is the iCloud container identifier.

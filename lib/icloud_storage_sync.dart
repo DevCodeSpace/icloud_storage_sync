@@ -13,6 +13,13 @@ class IcloudStorageSync {
     return IcloudStorageSyncPlatform.instance.getPlatformVersion();
   }
 
+  /// Returns the absolute path of the iCloud container directory for [containerId].
+  Future<String?> getContainerUrl({required String containerId}) {
+    return IcloudStorageSyncPlatform.instance.getContainerUrl(
+      containerId: containerId,
+    );
+  }
+
   /// Gathers metadata for all files in the specified iCloud container.
   ///
   /// [containerId] The ID of the iCloud container to query.
