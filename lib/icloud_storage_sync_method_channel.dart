@@ -26,6 +26,14 @@ class MethodChannelIcloudStorageSync extends IcloudStorageSyncPlatform {
     });
   }
 
+  @override
+  Future<bool> isICloudAvailable() async {
+    final available = await methodChannel.invokeMethod<bool>(
+      'isICloudAvailable',
+    );
+    return available ?? false;
+  }
+
   /// Gathers iCloud files and their metadata.
   ///
   /// [containerId] is the iCloud container identifier.

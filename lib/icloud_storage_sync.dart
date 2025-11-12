@@ -20,6 +20,15 @@ class IcloudStorageSync {
     );
   }
 
+  /// Indicates whether iCloud is available on this device for iCloud Drive Documents.
+  ///
+  /// This checks if the system exposes a ubiquity identity token, which is
+  /// present only when the user is signed into iCloud and the feature is
+  /// enabled.
+  Future<bool> isICloudAvailable() {
+    return IcloudStorageSyncPlatform.instance.isICloudAvailable();
+  }
+
   /// Gathers metadata for all files in the specified iCloud container.
   ///
   /// [containerId] The ID of the iCloud container to query.

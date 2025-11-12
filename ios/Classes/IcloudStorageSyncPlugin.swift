@@ -34,6 +34,8 @@ public class IcloudStorageSyncPlugin: NSObject, FlutterPlugin {
             } else {
                 result(FlutterError(code: "INVALID_ARGUMENT", message: "containerId not provided", details: nil))
             }
+        case "isICloudAvailable":
+            isICloudAvailable(result)
         case "upload":
             upload(call, result) 
         case "delete":
@@ -172,6 +174,11 @@ public class IcloudStorageSyncPlugin: NSObject, FlutterPlugin {
         DebugHelper.log("containerURL: \(containerURL.path)")
         result(containerURL.path)
     }
+
+  private func isICloudAvailable(_ result: @escaping FlutterResult) {
+    let isAvailable = FileManager.default.ubiquityIdentityToken != nil
+    result(isAvailable)
+  }
 
 
   private func upload(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {

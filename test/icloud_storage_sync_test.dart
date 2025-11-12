@@ -58,6 +58,11 @@ class MockIcloudStorageSyncPlatform
       StreamHandler<double>? onProgress}) {
     throw UnimplementedError();
   }
+
+  @override
+  Future<bool> isICloudAvailable() {
+    throw UnimplementedError();
+  }
 }
 
 void main() {
