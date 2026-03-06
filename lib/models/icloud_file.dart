@@ -34,11 +34,12 @@ class ICloudFile {
             ((map['creationDate'] as double) * 1000).round()),
         contentChangeDate = DateTime.fromMillisecondsSinceEpoch(
             ((map['contentChangeDate'] as double) * 1000).round()),
-        isDownloading = map['isDownloading'],
-        downloadStatus = _mapToDownloadStatusFromNSKeys(map['downloadStatus']),
-        isUploading = map['isUploading'],
-        isUploaded = map['isUploaded'],
-        hasUnresolvedConflicts = map['hasUnresolvedConflicts'];
+        isDownloading = map['isDownloading'] ?? false,
+        downloadStatus =
+            _mapToDownloadStatusFromNSKeys(map['downloadStatus'] ?? ''),
+        isUploading = map['isUploading'] ?? false,
+        isUploaded = map['isUploaded'] ?? false,
+        hasUnresolvedConflicts = map['hasUnresolvedConflicts'] ?? false;
 
   /// Map native download status keys to DownloadStatus enum
   static DownloadStatus _mapToDownloadStatusFromNSKeys(String key) {
@@ -50,7 +51,7 @@ class ICloudFile {
       case 'NSMetadataUbiquitousItemDownloadingStatusCurrent':
         return DownloadStatus.current;
       default:
-        throw 'NSMetadataUbiquitousItemDownloadingStatusKey is not handled';
+        return DownloadStatus.notDownloaded;
     }
   }
 }

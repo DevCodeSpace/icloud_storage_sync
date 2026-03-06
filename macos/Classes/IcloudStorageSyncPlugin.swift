@@ -337,40 +337,80 @@ public class IcloudStorageSyncPlugin: NSObject, FlutterPlugin {
     }
   }
   
-  private func delete(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-    guard let args = call.arguments as? Dictionary<String, Any>,
-          let containerId = args["containerId"] as? String,
-          let cloudFileName = args["cloudFileName"] as? String
-    else {
-      result(argumentError)
-      return
-    }
-    
-    guard let containerURL = FileManager.default.url(forUbiquityContainerIdentifier: containerId)
-    else {
-      result(containerError)
-      return
-    }
-    DebugHelper.log("containerURL: \(containerURL.path)")
-    
-    let fileURL = containerURL.appendingPathComponent(cloudFileName)
-    let fileCoordinator = NSFileCoordinator(filePresenter: nil)
-    fileCoordinator.coordinate(writingItemAt: fileURL, options: NSFileCoordinator.WritingOptions.forDeleting, error: nil) {
-      writingURL in
-      do {
-        var isDir: ObjCBool = false
-        if !FileManager.default.fileExists(atPath: writingURL.path, isDirectory: &isDir) {
-          result(fileNotFoundError)
-          return
-        }
-        try FileManager.default.removeItem(at: writingURL)
-        result(nil)
-      } catch {
-        DebugHelper.log("error: \(error.localizedDescription)")
-        result(nativeCodeError(error))
+private func delete(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+  guard let args = call.arguments as? Dictionary<String, Any>,
+        let containerId = args["containerId"] as? String,
+        let cloudFileName = args["cloudFileName"] as? String
+  else {
+    result(argumentError)
+    return
+  }
+
+ 
+  let isDirectory = args["isDirectory"] as? Bool ?? false
+
+  guard let containerURL =
+          FileManager.default.url(forUbiquityContainerIdentifier: containerId)
+  else {
+    result(containerError)
+    return
+  }
+
+  DebugHelper.log("containerURL: \(containerURL.path)")
+
+  let fileURL = containerURL.appendingPathComponent(cloudFileName)
+  let fileCoordinator = NSFileCoordinator(filePresenter: nil)
+
+  fileCoordinator.coordinate(
+    writingItemAt: fileURL,
+    options: .forDeleting,
+    error: nil
+  ) { writingURL in
+    do {
+      var isDir: ObjCBool = false
+
+      if !FileManager.default.fileExists(
+        atPath: writingURL.path,
+        isDirectory: &isDir
+      ) {
+        result(fileNotFoundError)
+        return
       }
+
+     
+      if isDirectory && !isDir.boolValue {
+        result(
+          FlutterError(
+            code: "EXPECTED_DIRECTORY",
+            message: "Path is not a directory",
+            details: nil
+          )
+        )
+        return
+      }
+
+      if !isDirectory && isDir.boolValue {
+        result(
+          FlutterError(
+            code: "EXPECTED_FILE",
+            message: "Path is a directory",
+            details: nil
+          )
+        )
+        return
+      }
+
+     
+      try FileManager.default.removeItem(at: writingURL)
+      result(nil)
+
+    } catch {
+      DebugHelper.log("error: \(error.localizedDescription)")
+      result(nativeCodeError(error))
     }
   }
+}
+
   
   private func move(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
     guard let args = call.arguments as? Dictionary<String, Any>,

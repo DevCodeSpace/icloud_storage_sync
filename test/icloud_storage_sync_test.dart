@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:icloud_storage_sync/icloud_storage_sync.dart';
-import 'package:icloud_storage_sync/icloud_storage_sync_platform_interface.dart';
 import 'package:icloud_storage_sync/icloud_storage_sync_method_channel.dart';
+import 'package:icloud_storage_sync/icloud_storage_sync_platform_interface.dart';
 import 'package:icloud_storage_sync/models/icloud_file.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -13,7 +13,9 @@ class MockIcloudStorageSyncPlatform
 
   @override
   Future<void> delete(
-      {required String containerId, required String relativePath}) {
+      {required String containerId,
+      required String relativePath,
+      required bool isDirectory}) {
     throw UnimplementedError();
   }
 

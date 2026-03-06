@@ -88,6 +88,7 @@ abstract class IcloudStorageSyncPlatform extends PlatformInterface {
   Future<void> delete({
     required String containerId,
     required String relativePath,
+    required bool isDirectory
   }) async {
     throw UnimplementedError('delete() has not been implemented.');
   }

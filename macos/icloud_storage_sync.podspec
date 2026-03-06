@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'icloud_storage_sync'
-  s.version          = '0.0.2'
+  s.version          = '0.0.1'
   s.summary          = 'icloud storage sync'
   s.description      = <<-DESC
 icloud storage sync

@@ -1,13 +1,12 @@
-import 'dart:developer';
-import 'dart:io';
+// ignore_for_file: depend_on_referenced_packages
 
-import 'package:file_picker/file_picker.dart';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:icloud_storage_sync/models/icloud_file_download.dart';
 import 'package:icloud_storage_sync_example/controller/icloud_plugin_controller.dart';
 import 'package:icloud_storage_sync_example/icloud_state.dart';
-import 'package:path/path.dart' as path;
 
 /// Widget for displaying and managing iCloud files
 class IcloudScreen extends StatefulWidget {
@@ -292,195 +291,90 @@ class _IcloudScreenState extends State<IcloudScreen> {
   /// Build individual cloud file item
   Widget _buildCloudFileItem(int index) {
     CloudFiles cloudFile = icloudController.cloudFiles![index];
-    return Obx(
-      () => !icloudController.cloudFilesNameList[index].text
-              .contains(icloudController.searchIcloudFileController.value.text)
-          ? const SizedBox()
-          : Card(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              elevation: 2,
-              child: ExpansionTile(
-                leading: icloudController.isDeleteMultipleFiles.value == true
-                    ? SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: Checkbox(
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                            value: icloudController.selectedFilesRelativePath
-                                .any((e) => e == cloudFile.relativePath),
-                            onChanged: (e) {
-                              if (e == true) {
-                                icloudController.selectedFilesRelativePath
-                                    .add(cloudFile.relativePath ?? "");
-                              } else {
-                                icloudController.selectedFilesRelativePath
-                                    .remove(cloudFile.relativePath);
-                              }
-                            }),
-                      )
-                    : Icon(Icons.cloud,
-                        color: Theme.of(context).colorScheme.secondary),
-                title: Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .secondaryContainer
-                              .withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          children: [
-                            // Editable file name
-                            Expanded(
-                              child: TextField(
-                                controller:
-                                    icloudController.cloudFilesNameList[index],
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                  isDense: true,
-                                  contentPadding: EdgeInsets.symmetric(
-                                      vertical: 0, horizontal: 0),
-                                ),
-                              ),
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Cancel rename
-                                InkWell(
-                                  onTap: () {
-                                    icloudController.cloudFilesNameList[index]
-                                        .text = cloudFile.title;
-                                    icloudController.cloudFilesNameList
-                                        .refresh();
-                                  },
-                                  child: Icon(Icons.close,
-                                      color:
-                                          Theme.of(context).colorScheme.error),
-                                ),
-                                // Confirm rename
-                                InkWell(
-                                  onTap: () async {
-                                    await icloudController
-                                        .renameFile(
-                                      cloudFile,
-                                      icloudController
-                                          .cloudFilesNameList[index].text,
-                                    )
-                                        .then((dat) {
-                                      getCloudFiles();
-                                    });
-                                  },
-                                  child: Icon(Icons.check,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primary),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    // Delete single file
-                    InkWell(
-                        onTap: () async {
-                          await icloudController
-                              .deleteFileFromiCloud(
-                                  relativePath: cloudFile.relativePath ?? '')
-                              .then((dat) async {
-                            await Future.delayed(const Duration(seconds: 2),
-                                () async {
-                              await getCloudFiles();
-                            });
-                          });
-                        },
-                        child: Icon(Icons.delete,
-                            color: Theme.of(context).colorScheme.error)),
-                  ],
-                ),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildInfoRow(Icons.folder, "Path", cloudFile.filePath),
-                        const SizedBox(height: 8),
-                        _buildInfoRow(Icons.storage, "Size",
-                            "${(cloudFile.sizeInBytes / (1024 * 1024)).toStringAsFixed(3)} MB"),
-                        const SizedBox(height: 8),
-                        _buildInfoRow(Icons.calendar_today, "File Date",
-                            cloudFile.fileDate.toString()),
-                        const SizedBox(height: 8),
-                        ElevatedButton(
-                            onPressed: () async {
-                              // Replace file
-                              FilePickerResult? result =
-                                  await FilePicker.platform.pickFiles(
-                                allowMultiple: false,
-                                type: FileType.image,
-                              );
 
-                              if (result != null) {
-                                List<File> files = result.paths
-                                    .map((path) => File(path!))
-                                    .toList();
-                                for (var file in files) {
-                                  String fileName =
-                                      path.basenameWithoutExtension(file.path);
-                                  if (fileName.contains(".")) {
-                                    Get.snackbar("Warning",
-                                        "$fileName Please rename this file (.) not allow in file name",
-                                        duration: const Duration(seconds: 2));
-                                  } else {
-                                    await icloudController
-                                        .replaceFile(
-                                            updatedFilePath: file.path,
-                                            relativePath:
-                                                cloudFile.relativePath!)
-                                        .then((e) async {
-                                      await getCloudFiles();
-                                    });
-                                  }
-                                }
-                              } else {
-                                Get.snackbar("Warning", "Please select file");
-                              }
-                            },
-                            child: const Text("Replace File"))
-                      ],
-                    ),
+    return Obx(() {
+      final searchText = icloudController.searchIcloudFileController.value.text;
+
+      if (searchText.isNotEmpty &&
+          !icloudController.cloudFilesNameList[index].text
+              .toLowerCase()
+              .contains(searchText.toLowerCase())) {
+        return const SizedBox.shrink();
+      }
+
+      return Card(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        elevation: 2,
+        child: ExpansionTile(
+          leading: icloudController.isDeleteMultipleFiles.value == true
+              ? SizedBox(
+                  height: 24,
+                  width: 24,
+                  child: Checkbox(
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    value: icloudController.selectedFilesRelativePath
+                        .any((e) => e == cloudFile.relativePath),
+                    onChanged: (e) {
+                      if (e == true) {
+                        icloudController.selectedFilesRelativePath
+                            .add(cloudFile.relativePath ?? "");
+                      } else {
+                        icloudController.selectedFilesRelativePath
+                            .remove(cloudFile.relativePath);
+                      }
+                    },
                   ),
-                ],
+                )
+              : Icon(Icons.cloud,
+                  color: Theme.of(context).colorScheme.secondary),
+          title: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: icloudController.cloudFilesNameList[index],
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    isDense: true,
+                  ),
+                ),
               ),
-            ),
-    );
+              InkWell(
+                onTap: () {
+                  icloudController.cloudFilesNameList[index].text =
+                      cloudFile.title;
+                  icloudController.cloudFilesNameList.refresh();
+                },
+                child: Icon(Icons.close,
+                    color: Theme.of(context).colorScheme.error),
+              ),
+              InkWell(
+                onTap: () async {
+                  await icloudController.renameFile(
+                    cloudFile,
+                    icloudController.cloudFilesNameList[index].text,
+                  );
+                  await getCloudFiles();
+                },
+                child: Icon(Icons.check,
+                    color: Theme.of(context).colorScheme.primary),
+              ),
+              InkWell(
+                onTap: () async {
+                  await icloudController.deleteFileFromiCloud(
+                    relativePath: cloudFile.relativePath ?? '',
+                  );
+                  await getCloudFiles();
+                },
+                child: Icon(Icons.delete,
+                    color: Theme.of(context).colorScheme.error),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 
-  /// Build information row for cloud file details
-  Widget _buildInfoRow(IconData icon, String label, String value) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: Theme.of(context).colorScheme.primary),
-        const SizedBox(width: 8),
-        Text("$label: ",
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(fontWeight: FontWeight.bold)),
-        Expanded(
-          child: Text(value,
-              style: Theme.of(context).textTheme.bodyMedium,
-              overflow: TextOverflow.ellipsis),
-        ),
-      ],
-    );
-  }
+  
+ 
 }

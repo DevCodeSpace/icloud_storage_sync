@@ -18,7 +18,7 @@ import 'package:path/path.dart' as path;
 /// Controller class for managing iCloud-related operations
 class IcloudController extends GetxController {
   // Add your iCloud container ID
-  final iCloudContainerId = '';
+  final iCloudContainerId = 'Add Your Project Container ID';
 
   // Observable map to store user data
   RxMap<String, dynamic> userData = <String, dynamic>{}.obs;
@@ -193,7 +193,9 @@ class IcloudController extends GetxController {
   Future<bool?> deleteFileFromiCloud({required String relativePath}) async {
     try {
       await icloudSyncPlugin.delete(
-          containerId: iCloudContainerId, relativePath: relativePath);
+          containerId: iCloudContainerId,
+          relativePath: relativePath,
+          isDirectory: false);
       await Future.delayed(const Duration(seconds: 1));
       return true;
     } catch (e) {

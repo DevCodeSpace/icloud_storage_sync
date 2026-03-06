@@ -162,6 +162,7 @@ Future<bool?> deleteFileFromiCloud({required String relativePath}) async {
     await icloudSyncPlugin.delete(
       containerId: iCloudContainerId,
       relativePath: Uri.decodeComponent(relativePath)
+      isDirectory: false
     );
     
     // Return true if deletion is successful

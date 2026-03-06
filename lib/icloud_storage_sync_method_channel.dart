@@ -155,10 +155,12 @@ class MethodChannelIcloudStorageSync extends IcloudStorageSyncPlatform {
   Future<void> delete({
     required containerId,
     required String relativePath,
+    required bool isDirectory
   }) async {
     await methodChannel.invokeMethod('delete', {
       'containerId': containerId,
       'cloudFileName': relativePath,
+      'isDirectory': isDirectory
     });
   }
 

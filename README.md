@@ -2,7 +2,7 @@
 
 **Seamless iCloud integration for your Flutter iOS apps!**
 
-![iCloud Storage Sync Banner](https://raw.githubusercontent.com/DevCodeSpace/icloud_storage_sync/refs/heads/main/assets/icloud_storage_sync_pub_dev_banner.jpg)
+![iCloud Storage Sync Banner](https://gitlab.com/mohammedbakali.codexlancers/icloud-plugin/-/raw/main/assets/icloud_storage_sync_pub_dev_banner.jpg)
 
 ## 🌟 Introduction
 
@@ -122,10 +122,12 @@ Future<void> rename({
 Future<void> delete({
   required String containerId,
   required String relativePath,
+  required bool isDirectory
 }) async {
   await icloudSyncPlugin.delete(
     containerId: containerId,
     relativePath: relativePath,
+    isDirectory: isDirectory
   );
 }
 ```
@@ -182,8 +184,9 @@ Future<void> move({
 <br>
 
 ## 🤝 Contributing
+[![](https://gitlab.com/mohammedbakali.codexlancers/icloud-plugin/-/raw/main/assets/contributors.png)](https://github.com/DevCodeSpace/twilio_voice_flutter/graphs/contributors)
 
-[![](https://raw.githubusercontent.com/DevCodeSpace/icloud_storage_sync/refs/heads/main/assets/contributors.png)](https://github.com/DevCodeSpace/icloud_storage_sync/graphs/contributors)
+<br/>
 
 ## 🙏 Acknowledgements
 
@@ -193,3 +196,4 @@ Future<void> move({
 ---
 
 Made with ❤️ by the DevCodeSpace
+

@@ -1,5 +1,8 @@
+// ignore_for_file: unintended_html_in_doc_comment
+
 import 'dart:core';
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:icloud_storage_sync/icloud_storage_sync.dart';
 import 'package:icloud_storage_sync/models/icloud_file.dart';

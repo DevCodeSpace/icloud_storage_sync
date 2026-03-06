@@ -141,6 +141,7 @@ class IcloudStorageSync {
   Future<void> delete({
     required String containerId,
     required String relativePath,
+    required bool isDirectory
   }) async {
     if (!_validateRelativePath(Uri.decodeComponent(relativePath))) {
       throw InvalidArgumentException('invalid relativePath');
@@ -149,6 +150,7 @@ class IcloudStorageSync {
     await IcloudStorageSyncPlatform.instance.delete(
       containerId: containerId,
       relativePath: Uri.decodeComponent(relativePath),
+      isDirectory: isDirectory
     );
   }
 
@@ -163,6 +165,7 @@ class IcloudStorageSync {
       await IcloudStorageSyncPlatform.instance.delete(
         containerId: containerId,
         relativePath: Uri.decodeComponent(path),
+        isDirectory: false
       );
     }
 
@@ -258,7 +261,7 @@ class IcloudStorageSync {
     }
 
     // Delete the existing file from iCloud
-    await delete(containerId: containerId, relativePath: relativePath);
+    await delete(containerId: containerId, relativePath: relativePath, isDirectory: false);
 
     // Upload the new version of the file
     await upload(
