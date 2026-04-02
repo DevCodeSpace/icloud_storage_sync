@@ -45,11 +45,10 @@ class IcloudController extends GetxController {
   // Observable list to store cloud files
   RxList<CloudFiles>? cloudFiles = <CloudFiles>[].obs;
   // Observable list of text editing controllers for cloud file names
-  RxList<TextEditingController> cloudFilesNameList =
-      <TextEditingController>[].obs;
+  RxList<TextEditingController> cloudFilesNameList = <TextEditingController>[].obs;
 
   /// Initiates the Apple Sign-In process
-  Future<void> signInWithApple(context) async {
+  Future<void> signInWithApple(BuildContext context) async {
     try {
       // Perform Apple sign-in and get credentials
       final credential = await SignInWithApple.getAppleIDCredential(
@@ -68,11 +67,7 @@ class IcloudController extends GetxController {
       Map<String, dynamic> decodedJson = json.decode(decodedString);
 
       // Store user data in the observable map
-      userData.value = {
-        'id': credential.authorizationCode,
-        'token': credential.identityToken,
-        'email': decodedJson["email"]
-      };
+      userData.value = {'id': credential.authorizationCode, 'token': credential.identityToken, 'email': decodedJson["email"]};
 
       // Save user data to shared preferences
       final prefs = await SharedPreferences.getInstance();
@@ -95,7 +90,8 @@ class IcloudController extends GetxController {
   }
 
   /// Allows the user to pick multiple files
-  pickMultipleFile() async {
+  ///
+  Future<void> pickMultipleFile() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         allowMultiple: true,
@@ -107,9 +103,7 @@ class IcloudController extends GetxController {
         for (var file in files) {
           String fileName = path.basenameWithoutExtension(file.path);
           if (fileName.contains(".")) {
-            Get.snackbar("Warning",
-                "$fileName Please rename this file (.) not allow in file name",
-                duration: const Duration(seconds: 2));
+            Get.snackbar("Warning", "$fileName Please rename this file (.) not allow in file name", duration: const Duration(seconds: 2));
           } else {
             selectedFiles.add(file);
           }
@@ -143,8 +137,7 @@ class IcloudController extends GetxController {
   }
 
   /// replace a file in iCloud
-  Future replaceFile(
-      {required String updatedFilePath, required String relativePath}) async {
+  Future replaceFile({required String updatedFilePath, required String relativePath}) async {
     try {
       if (updatedFilePath.isNotEmpty && relativePath.isNotEmpty) {
         await icloudSyncPlugin.replace(
@@ -178,8 +171,7 @@ class IcloudController extends GetxController {
   /// Uploads multiple files to iCloud
   Future<SynciCloudResult> uploadMultipleFileToICloud() async {
     try {
-      await icloudSyncPlugin.uploadMultipleFileToICloud(
-          containerId: iCloudContainerId, files: selectedFiles);
+      await icloudSyncPlugin.uploadMultipleFileToICloud(containerId: iCloudContainerId, files: selectedFiles);
       selectedFiles.clear();
       debugPrint("All files uploaded successfully");
       return SynciCloudResult.completed;
@@ -192,10 +184,7 @@ class IcloudController extends GetxController {
   /// Deletes a single file from iCloud
   Future<bool?> deleteFileFromiCloud({required String relativePath}) async {
     try {
-      await icloudSyncPlugin.delete(
-          containerId: iCloudContainerId,
-          relativePath: relativePath,
-          isDirectory: false);
+      await icloudSyncPlugin.delete(containerId: iCloudContainerId, relativePath: relativePath, isDirectory: false);
       await Future.delayed(const Duration(seconds: 1));
       return true;
     } catch (e) {
@@ -207,9 +196,7 @@ class IcloudController extends GetxController {
   /// Deletes multiple files from iCloud
   Future<SynciCloudResult> deleteMultipleFileFromiCloud() async {
     try {
-      await icloudSyncPlugin.deleteMultipleFileToICloud(
-          containerId: iCloudContainerId,
-          relativePathList: selectedFilesRelativePath);
+      await icloudSyncPlugin.deleteMultipleFileToICloud(containerId: iCloudContainerId, relativePathList: selectedFilesRelativePath);
       await Future.delayed(const Duration(seconds: 3));
       selectedFilesRelativePath.clear();
       return SynciCloudResult.completed;

@@ -1,3 +1,11 @@
+## Version 0.0.4
+
+📦 Updated dependencies: `intl` to `>=0.20.2`, `flutter_lints` to `^6.0.0`
+
+📝 Updated README to use local asset references instead of remote URLs
+
+🎨 Improved README formatting and table alignment
+
 ## Version 0.0.3
 
 🗂️ Extended Delete method to support directory deletion 

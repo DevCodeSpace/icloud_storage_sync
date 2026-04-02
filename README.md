@@ -2,7 +2,7 @@
 
 **Seamless iCloud integration for your Flutter iOS apps!**
 
-![iCloud Storage Sync Banner](https://gitlab.com/mohammedbakali.codexlancers/icloud-plugin/-/raw/main/assets/icloud_storage_sync_pub_dev_banner.jpg)
+<img src="assets/icloud_storage_sync_pub_dev_banner.jpg" alt="iCloud Storage Sync Banner" />
 
 ## 🌟 Introduction
 
@@ -16,16 +16,15 @@ iCloud_Storage_Sync simplifies iCloud storage integration, bringing powerful clo
 
 ☁️ Seamless integration with the iCloud ecosystem
 
-
 ## ✨ Features
 
-| Feature | Description |
-|---------|-------------|
-| 📂 | Get iCloud files |
-| ⬆️ | Upload files to iCloud |
-| ✏️ | Rename iCloud files |
-| 🗑️ | Delete iCloud files |
-| ↔️ | Move iCloud files |
+| Feature | Description            |
+| ------- | ---------------------- |
+| 📂      | Get iCloud files       |
+| ⬆️      | Upload files to iCloud |
+| ✏️      | Rename iCloud files    |
+| 🗑️      | Delete iCloud files    |
+| ↔️      | Move iCloud files      |
 
 <br>
 
@@ -59,14 +58,14 @@ import 'package:icloud_storage_sync/icloud_storage_sync.dart';
 ## 📋 Prerequisites
 
 Before diving in, make sure you have:
- 
- ☑️ An Apple Developer account
 
- ☑️ App ID and iCloud Container ID
+☑️ An Apple Developer account
 
- ☑️ iCloud capability enabled and assigned
+☑️ App ID and iCloud Container ID
 
- ☑️ iCloud capability configured in Xcode
+☑️ iCloud capability enabled and assigned
+
+☑️ iCloud capability configured in Xcode
 
 🔍 See [How to set up iCloud Container](#-how-to-set-up-icloud-container-and-enable-the-capability) for step-by-step instructions.
 
@@ -105,14 +104,14 @@ Future<void> upload({
 ```dart
 Future<void> rename({
   required String containerId,
-  required String relativePath,  
+  required String relativePath,
   required String newName,
 }) async {
   await icloudSyncPlugin.rename(
     containerId: containerId,
     relativePath: relativePath,
     newName: newName,
-  );  
+  );
 }
 ```
 
@@ -151,9 +150,9 @@ Future replaceFile({
 
 ```dart
 Future<void> move({
-  required String containerId,  
+  required String containerId,
   required String fromRelativePath,
-  required String toRelativePath,  
+  required String toRelativePath,
 }) async {
   await IcloudSyncPlatform.instance.move(
     containerId: containerId,
@@ -171,21 +170,21 @@ Future<void> move({
 
 2. **🆔 Create an App ID** (if needed) and an **iCloud Containers ID**:
 
-   ![iCloud Container ID](https://raw.githubusercontent.com/DevCodeSpace/icloud_storage_sync/main/assets/icloud_container_id.png)
+   <img src="assets/icloud_container_id.png" alt="iCloud Container ID" />
 
 3. **🔗 Assign the iCloud Container** to your App ID:
 
-   ![Assign iCloud Capability](https://raw.githubusercontent.com/DevCodeSpace/icloud_storage_sync/main/assets/assign_icloud_capability.png)
+   <img src="assets/assign_icloud_capability.png" alt="Assign iCloud Capability" />
 
 4. **💻 In Xcode, enable iCloud capability** and select your container:
 
-   ![Xcode Capability](https://raw.githubusercontent.com/DevCodeSpace/icloud_storage_sync/main/assets/xcode_capability.png)
+   <img src="assets/xcode_capability.png" alt="Xcode Capability" />
 
 <br>
 
 ## 🤝 Contributing
-[![](https://gitlab.com/mohammedbakali.codexlancers/icloud-plugin/-/raw/main/assets/contributors.png)](https://github.com/DevCodeSpace/twilio_voice_flutter/graphs/contributors)
 
+<img src="assets/contributors.png" width="450">
 <br/>
 
 ## 🙏 Acknowledgements
@@ -196,4 +195,3 @@ Future<void> move({
 ---
 
 Made with ❤️ by the DevCodeSpace
-
