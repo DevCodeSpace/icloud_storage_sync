@@ -42,6 +42,8 @@ abstract class IcloudStorageSyncPlatform extends PlatformInterface {
   Future<List<ICloudFile>> gather({
     required String containerId,
     StreamHandler<List<ICloudFile>>? onUpdate,
+    String? relativePathPrefix,
+    Duration? timeout,
   }) async {
     throw UnimplementedError('gather() has not been implemented.');
   }

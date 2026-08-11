@@ -22,10 +22,18 @@ class IcloudStorageSync {
   Future<List<ICloudFile>> gather({
     required String containerId,
     StreamHandler<List<ICloudFile>>? onUpdate,
+    /// Restricts the metadata query to a relative path within the container.
+    /// Supplying a prefix avoids indexing unrelated app data.
+    String? relativePathPrefix,
+    /// Bounds native metadata gathering. iCloud can otherwise leave an
+    /// NSMetadataQuery open indefinitely when its index is unavailable.
+    Duration? timeout,
   }) async {
     return await IcloudStorageSyncPlatform.instance.gather(
       containerId: containerId,
       onUpdate: onUpdate,
+      relativePathPrefix: relativePathPrefix,
+      timeout: timeout,
     );
   }
 

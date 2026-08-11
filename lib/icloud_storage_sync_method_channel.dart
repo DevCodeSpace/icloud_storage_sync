@@ -27,6 +27,8 @@ class MethodChannelIcloudStorageSync extends IcloudStorageSyncPlatform {
   Future<List<ICloudFile>> gather({
     required String containerId,
     StreamHandler<List<ICloudFile>>? onUpdate,
+    String? relativePathPrefix,
+    Duration? timeout,
   }) async {
     // Generate a unique event channel name if updates are requested
     final eventChannelName = onUpdate == null
@@ -54,6 +56,8 @@ class MethodChannelIcloudStorageSync extends IcloudStorageSyncPlatform {
         await methodChannel.invokeListMethod<Map<dynamic, dynamic>>('gather', {
       'containerId': containerId,
       'eventChannelName': eventChannelName,
+      if (relativePathPrefix != null) 'relativePathPrefix': relativePathPrefix,
+      if (timeout != null) 'timeoutMilliseconds': timeout.inMilliseconds,
     });
 
     return _mapFilesFromDynamicList(mapList);
