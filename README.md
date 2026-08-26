@@ -25,6 +25,14 @@ iCloud_Storage_Sync simplifies iCloud storage integration, bringing powerful clo
 | ✏️      | Rename iCloud files    |
 | 🗑️      | Delete iCloud files    |
 | ↔️      | Move iCloud files      |
+| 🔍      | Filter by path prefix  |
+| ⏱️      | Timeout support        |
+
+**Advanced Features:**
+- 🔍 **Path Filtering** - Query specific subdirectories instead of entire container for better performance
+- ⏱️ **Timeout Support** - Set time limits on metadata queries to prevent indefinite hangs
+- 📊 **Progress Tracking** - Monitor upload/download progress with callbacks
+- 🔄 **Stream Updates** - Receive live updates as files change in iCloud
 
 <br>
 
@@ -47,7 +55,28 @@ Run:
 flutter pub get
 ```
 
-### 3. 💻 Usage
+### 3. 🔧 Configure Your iCloud Container ID
+
+Update your iCloud Container ID in the example app:
+
+**In `example/lib/controller/icloud_plugin_controller.dart`:**
+```dart
+final iCloudContainerId = 'iCloud.com.yourcompany.appname'; // Replace with your container ID
+```
+
+**In `example/ios/Runner/Info.plist`:**
+```xml
+<key>iCloud.com.yourcompany.appname</key>  <!-- Replace with your container ID -->
+```
+
+**In `example/ios/Runner/Runner.entitlements` and `RunnerDebug.entitlements`:**
+```xml
+<string>iCloud.com.yourcompany.appname</string>  <!-- Replace with your container ID -->
+```
+
+> ℹ️ **Note:** Your iCloud Container ID should match the format: `iCloud.<your-team-id>.<your-bundle-id>`
+
+### 4. 💻 Usage
 
 Import in your Dart code:
 
@@ -80,6 +109,56 @@ Future<List<CloudFiles>> getCloudFiles({required String containerId}) async {
   return await icloudSyncPlugin.getCloudFiles(containerId: containerId);
 }
 ```
+
+### 📂 Gathering Files with Path Filtering & Timeout
+
+```dart
+// Gather files with optional path prefix filtering
+Future<List<ICloudFile>> gatherFilesFromSubdirectory({
+  required String containerId,
+  required String pathPrefix,
+}) async {
+  return await icloudSyncPlugin.gather(
+    containerId: containerId,
+    relativePathPrefix: pathPrefix, // e.g., 'Documents/', 'Projects/MyApp/'
+  );
+}
+
+// Gather files with timeout to prevent indefinite hangs
+Future<List<ICloudFile>> gatherFilesWithTimeout({
+  required String containerId,
+  required Duration timeout,
+}) async {
+  try {
+    return await icloudSyncPlugin.gather(
+      containerId: containerId,
+      timeout: timeout, // e.g., Duration(seconds: 30)
+    );
+  } on PlatformException catch (e) {
+    if (e.code == 'METADATA_QUERY_TIMEOUT') {
+      debugPrint('iCloud query timed out');
+    }
+    return [];
+  }
+}
+
+// Combine both features for optimal performance
+Future<List<ICloudFile>> gatherFilesOptimized({
+  required String containerId,
+  required String pathPrefix,
+}) async {
+  return await icloudSyncPlugin.gather(
+    containerId: containerId,
+    relativePathPrefix: pathPrefix,
+    timeout: Duration(seconds: 30),
+  );
+}
+```
+
+**Features:**
+- 📂 `relativePathPrefix` - Filter to specific subdirectory for faster queries
+- ⏱️ `timeout` - Set time limit to prevent indefinite hangs
+- 🔄 Both parameters are optional and backwards compatible
 
 ### 📤 Uploading Files to iCloud
 
