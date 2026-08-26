@@ -17,15 +17,21 @@ class IcloudStorageSync {
   ///
   /// [containerId] The ID of the iCloud container to query.
   /// [onUpdate] An optional callback that will be triggered when the file list is updated.
+  /// [relativePathPrefix] Optional path prefix to filter results to a specific subdirectory.
+  /// [timeout] Optional timeout duration for the metadata gathering operation.
   ///
   /// Returns a Future that resolves to a List of [ICloudFile] objects.
   Future<List<ICloudFile>> gather({
     required String containerId,
     StreamHandler<List<ICloudFile>>? onUpdate,
+    String? relativePathPrefix,
+    Duration? timeout,
   }) async {
     return await IcloudStorageSyncPlatform.instance.gather(
       containerId: containerId,
       onUpdate: onUpdate,
+      relativePathPrefix: relativePathPrefix,
+      timeout: timeout,
     );
   }
 
@@ -138,20 +144,18 @@ class IcloudStorageSync {
   ///
   /// Throws [InvalidArgumentException] if the relative path is invalid.
   /// May throw [PlatformException] if the file is not found.
-  Future<void> delete({
-    required String containerId,
-    required String relativePath,
-    required bool isDirectory
-  }) async {
+  Future<void> delete(
+      {required String containerId,
+      required String relativePath,
+      required bool isDirectory}) async {
     if (!_validateRelativePath(Uri.decodeComponent(relativePath))) {
       throw InvalidArgumentException('invalid relativePath');
     }
 
     await IcloudStorageSyncPlatform.instance.delete(
-      containerId: containerId,
-      relativePath: Uri.decodeComponent(relativePath),
-      isDirectory: isDirectory
-    );
+        containerId: containerId,
+        relativePath: Uri.decodeComponent(relativePath),
+        isDirectory: isDirectory);
   }
 
   Future<void> deleteMultipleFileToICloud(
@@ -163,10 +167,9 @@ class IcloudStorageSync {
         throw InvalidArgumentException('invalid relativePath');
       }
       await IcloudStorageSyncPlatform.instance.delete(
-        containerId: containerId,
-        relativePath: Uri.decodeComponent(path),
-        isDirectory: false
-      );
+          containerId: containerId,
+          relativePath: Uri.decodeComponent(path),
+          isDirectory: false);
     }
 
     await Future.delayed(const Duration(seconds: 1));
@@ -261,7 +264,10 @@ class IcloudStorageSync {
     }
 
     // Delete the existing file from iCloud
-    await delete(containerId: containerId, relativePath: relativePath, isDirectory: false);
+    await delete(
+        containerId: containerId,
+        relativePath: relativePath,
+        isDirectory: false);
 
     // Upload the new version of the file
     await upload(

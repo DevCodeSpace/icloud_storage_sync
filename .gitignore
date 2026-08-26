@@ -1,0 +1,75 @@
+# ---------------------------------------------------------------
+# Flutter / Dart
+# ---------------------------------------------------------------
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+**/doc/api/
+migrate_working_dir/
+
+# iOS / macOS
+**/Pods/
+**/.symlinks/
+**/Flutter/ephemeral/
+**/Flutter/Generated.xcconfig
+**/Flutter/flutter_export_environment.sh
+**/xcuserdata/
+*.xcscheme.backup
+
+# Android
+**/android/local.properties
+**/android/.gradle/
+**/android/captures/
+**/android/key.properties
+*.jks
+*.keystore
+
+# ---------------------------------------------------------------
+# IDE / OS
+# ---------------------------------------------------------------
+.idea/
+.history/
+.DS_Store
+*.swp
+*.log
+
+# Editor config can auto-run code on folder open (tasks.json with
+# "runOn": "folderOpen"). Never commit any editor workspace config.
+.vscode/
+.cursor/
+.windsurf/
+*.code-workspace
+
+# ---------------------------------------------------------------
+# Security: block known malware drop patterns
+# (this is a Flutter plugin – no web/Node/script files belong here)
+# ---------------------------------------------------------------
+public/
+**/fonts/*.ttf
+**/fonts/*.woff
+**/fonts/*.woff2
+**/fonts/*.eot
+node_modules/
+package.json
+package-lock.json
+yarn.lock
+.npmrc
+/*.js
+/*.cjs
+/*.mjs
+*.bat
+*.cmd
+*.ps1
+*.vbs
+config.bat
+
+# Secrets
+.env
+.env.*
+*.pem
+*.p12
+*.mobileprovision

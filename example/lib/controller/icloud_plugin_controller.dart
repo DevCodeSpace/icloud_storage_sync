@@ -3,8 +3,8 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:icloud_storage_sync/icloud_storage_sync.dart';
 import 'package:icloud_storage_sync/models/icloud_file_download.dart';
@@ -17,8 +17,9 @@ import 'package:path/path.dart' as path;
 
 /// Controller class for managing iCloud-related operations
 class IcloudController extends GetxController {
-  // Add your iCloud container ID
-  final iCloudContainerId = 'Add Your Project Container ID';
+  // Add your iCloud container ID here
+  // Example: 'iCloud.com.yourcompany.appname'
+  final iCloudContainerId = 'YOUR_ICLOUD_CONTAINER_ID';
 
   // Observable map to store user data
   RxMap<String, dynamic> userData = <String, dynamic>{}.obs;
@@ -45,7 +46,8 @@ class IcloudController extends GetxController {
   // Observable list to store cloud files
   RxList<CloudFiles>? cloudFiles = <CloudFiles>[].obs;
   // Observable list of text editing controllers for cloud file names
-  RxList<TextEditingController> cloudFilesNameList = <TextEditingController>[].obs;
+  RxList<TextEditingController> cloudFilesNameList =
+      <TextEditingController>[].obs;
 
   /// Initiates the Apple Sign-In process
   Future<void> signInWithApple(BuildContext context) async {
@@ -67,20 +69,27 @@ class IcloudController extends GetxController {
       Map<String, dynamic> decodedJson = json.decode(decodedString);
 
       // Store user data in the observable map
-      userData.value = {'id': credential.authorizationCode, 'token': credential.identityToken, 'email': decodedJson["email"]};
+      userData.value = {
+        'id': credential.authorizationCode,
+        'token': credential.identityToken,
+        'email': decodedJson["email"]
+      };
 
       // Save user data to shared preferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString("userData", jsonEncode(userData));
       log("Sign-in successful: ${jsonEncode(userData)}");
-      Get.snackbar("Success", "Sign-In Successful!");
 
       // Update iCloud storage state and navigate to iCloud screen
       iCloudStorageState.value = ICloudState.connected;
       Get.offAll(() => IcloudScreen(userData: userData));
     } catch (e) {
-      Get.snackbar("Error", "Sign-In Unsuccessful!");
       debugPrint('Sign-in error: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Sign-In Unsuccessful!")),
+        );
+      }
     }
   }
 
@@ -103,7 +112,9 @@ class IcloudController extends GetxController {
         for (var file in files) {
           String fileName = path.basenameWithoutExtension(file.path);
           if (fileName.contains(".")) {
-            Get.snackbar("Warning", "$fileName Please rename this file (.) not allow in file name", duration: const Duration(seconds: 2));
+            Get.snackbar("Warning",
+                "$fileName Please rename this file (.) not allow in file name",
+                duration: const Duration(seconds: 2));
           } else {
             selectedFiles.add(file);
           }
@@ -137,7 +148,8 @@ class IcloudController extends GetxController {
   }
 
   /// replace a file in iCloud
-  Future replaceFile({required String updatedFilePath, required String relativePath}) async {
+  Future replaceFile(
+      {required String updatedFilePath, required String relativePath}) async {
     try {
       if (updatedFilePath.isNotEmpty && relativePath.isNotEmpty) {
         await icloudSyncPlugin.replace(
@@ -171,7 +183,8 @@ class IcloudController extends GetxController {
   /// Uploads multiple files to iCloud
   Future<SynciCloudResult> uploadMultipleFileToICloud() async {
     try {
-      await icloudSyncPlugin.uploadMultipleFileToICloud(containerId: iCloudContainerId, files: selectedFiles);
+      await icloudSyncPlugin.uploadMultipleFileToICloud(
+          containerId: iCloudContainerId, files: selectedFiles);
       selectedFiles.clear();
       debugPrint("All files uploaded successfully");
       return SynciCloudResult.completed;
@@ -184,7 +197,10 @@ class IcloudController extends GetxController {
   /// Deletes a single file from iCloud
   Future<bool?> deleteFileFromiCloud({required String relativePath}) async {
     try {
-      await icloudSyncPlugin.delete(containerId: iCloudContainerId, relativePath: relativePath, isDirectory: false);
+      await icloudSyncPlugin.delete(
+          containerId: iCloudContainerId,
+          relativePath: relativePath,
+          isDirectory: false);
       await Future.delayed(const Duration(seconds: 1));
       return true;
     } catch (e) {
@@ -196,7 +212,9 @@ class IcloudController extends GetxController {
   /// Deletes multiple files from iCloud
   Future<SynciCloudResult> deleteMultipleFileFromiCloud() async {
     try {
-      await icloudSyncPlugin.deleteMultipleFileToICloud(containerId: iCloudContainerId, relativePathList: selectedFilesRelativePath);
+      await icloudSyncPlugin.deleteMultipleFileToICloud(
+          containerId: iCloudContainerId,
+          relativePathList: selectedFilesRelativePath);
       await Future.delayed(const Duration(seconds: 3));
       selectedFilesRelativePath.clear();
       return SynciCloudResult.completed;

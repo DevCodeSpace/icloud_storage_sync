@@ -6,6 +6,8 @@ public class IcloudStorageSyncPlugin: NSObject, FlutterPlugin {
   var messenger: FlutterBinaryMessenger?
   var streamHandlers: [String: StreamHandler] = [:]
   let querySearchScopes = [NSMetadataQueryUbiquitousDataScope, NSMetadataQueryUbiquitousDocumentsScope];
+  /// Tokens returned by the block-based observer API, keyed by query.
+  private var queryObservers: [ObjectIdentifier: [NSObjectProtocol]] = [:]
 
   public static func register(with registrar: FlutterPluginRegistrar) {
      let messenger = registrar.messenger()
@@ -49,19 +51,32 @@ public class IcloudStorageSyncPlugin: NSObject, FlutterPlugin {
       result(argumentError)
       return
     }
-    
+
     guard let containerURL = FileManager.default.url(forUbiquityContainerIdentifier: containerId)
     else {
       result(containerError)
       return
     }
     DebugHelper.log("containerURL: \(containerURL.path)")
-    
+
+    let relativePathPrefix = (args["relativePathPrefix"] as? String)?
+      .trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+    let timeoutMilliseconds = args["timeoutMilliseconds"] as? Int
+    let queryRootURL = relativePathPrefix?.isEmpty == false
+      ? containerURL.appendingPathComponent(relativePathPrefix!)
+      : containerURL
+
     let query = NSMetadataQuery.init()
     query.operationQueue = .main
     query.searchScopes = querySearchScopes
-    query.predicate = NSPredicate(format: "%K beginswith %@", NSMetadataItemPathKey, containerURL.path)
-    addGatherFilesObservers(query: query, containerURL: containerURL, eventChannelName: eventChannelName, result: result)
+    query.predicate = NSPredicate(
+      format: "%K == %@ OR %K beginswith %@",
+      NSMetadataItemPathKey,
+      queryRootURL.path,
+      NSMetadataItemPathKey,
+      queryRootURL.path + "/"
+    )
+    addGatherFilesObservers(query: query, containerURL: containerURL, eventChannelName: eventChannelName, timeoutMilliseconds: timeoutMilliseconds, result: result)
     
     if !eventChannelName.isEmpty {
       let streamHandler = self.streamHandlers[eventChannelName]!
@@ -74,21 +89,47 @@ public class IcloudStorageSyncPlugin: NSObject, FlutterPlugin {
     query.start()
   }
   
-  private func addGatherFilesObservers(query: NSMetadataQuery, containerURL: URL, eventChannelName: String, result: @escaping FlutterResult) {
-    NotificationCenter.default.addObserver(forName: NSNotification.Name.NSMetadataQueryDidFinishGathering, object: query, queue: query.operationQueue) {
-      [self] (notification) in
-        let files = mapFileAttributesFromQuery(query: query, containerURL: containerURL)
+  private func addGatherFilesObservers(query: NSMetadataQuery, containerURL: URL, eventChannelName: String, timeoutMilliseconds: Int?, result: @escaping FlutterResult) {
+    let isStreaming = !eventChannelName.isEmpty
+    var replied = false
+
+    func reply(_ value: Any?) {
+      guard !replied else { return }
+      replied = true
+      if !isStreaming {
         removeObservers(query)
-        if eventChannelName.isEmpty { query.stop() }
-        result(files)
+        query.stop()
+      }
+      result(value)
     }
-    
-    if !eventChannelName.isEmpty {
-      NotificationCenter.default.addObserver(forName: NSNotification.Name.NSMetadataQueryDidUpdate, object: query, queue: query.operationQueue) {
-        [self] (notification) in
+
+    addQueryObserver(query, name: NSNotification.Name.NSMetadataQueryDidFinishGathering) { [self] _ in
+      let files = mapFileAttributesFromQuery(query: query, containerURL: containerURL)
+      reply(files)
+    }
+
+    if isStreaming {
+      addQueryObserver(query, name: NSNotification.Name.NSMetadataQueryDidUpdate) { [self] _ in
         let files = mapFileAttributesFromQuery(query: query, containerURL: containerURL)
-        let streamHandler = self.streamHandlers[eventChannelName]!
-        streamHandler.setEvent(files)
+        self.streamHandlers[eventChannelName]?.setEvent(files)
+      }
+    }
+
+    if let timeoutMilliseconds = timeoutMilliseconds, timeoutMilliseconds > 0 {
+      DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(timeoutMilliseconds)) {
+        [self] in
+        guard !replied else { return }
+        replied = true
+        removeObservers(query)
+        query.stop()
+        if isStreaming {
+          removeStreamHandler(eventChannelName)
+        }
+        result(FlutterError(
+          code: "METADATA_QUERY_TIMEOUT",
+          message: "Timed out waiting for iCloud metadata",
+          details: nil
+        ))
       }
     }
   }
@@ -214,13 +255,13 @@ public class IcloudStorageSyncPlugin: NSObject, FlutterPlugin {
   }
 
   private func addUploadObservers(query: NSMetadataQuery, eventChannelName: String) {
-      NotificationCenter.default.addObserver(forName: NSNotification.Name.NSMetadataQueryDidFinishGathering, object: query, queue: query.operationQueue) { [self] (notification) in
-        onUploadQueryNotification(query: query, eventChannelName: eventChannelName)
-      }
+    addQueryObserver(query, name: NSNotification.Name.NSMetadataQueryDidFinishGathering) { [self] _ in
+      onUploadQueryNotification(query: query, eventChannelName: eventChannelName)
+    }
 
-      NotificationCenter.default.addObserver(forName: NSNotification.Name.NSMetadataQueryDidUpdate, object: query, queue: query.operationQueue) { [self] (notification) in
-        onUploadQueryNotification(query: query, eventChannelName: eventChannelName)
-      }
+    addQueryObserver(query, name: NSNotification.Name.NSMetadataQueryDidUpdate) { [self] _ in
+      onUploadQueryNotification(query: query, eventChannelName: eventChannelName)
+    }
   }
 
   private func onUploadQueryNotification(query: NSMetadataQuery, eventChannelName: String) {
@@ -239,6 +280,8 @@ public class IcloudStorageSyncPlugin: NSObject, FlutterPlugin {
       streamHandler.setEvent(progress)
       if (progress >= 100) {
         streamHandler.setEvent(FlutterEndOfEventStream)
+        removeObservers(query)
+        query.stop()
         removeStreamHandler(eventChannelName)
       }
     }
@@ -267,6 +310,7 @@ public class IcloudStorageSyncPlugin: NSObject, FlutterPlugin {
       try FileManager.default.startDownloadingUbiquitousItem(at: cloudFileURL)
     } catch {
       result(nativeCodeError(error))
+      return
     }
     
     let query = NSMetadataQuery.init()
@@ -289,11 +333,11 @@ public class IcloudStorageSyncPlugin: NSObject, FlutterPlugin {
   }
   
   private func addDownloadObservers(query: NSMetadataQuery, cloudFileURL: URL, localFileURL: URL, eventChannelName: String) {
-    NotificationCenter.default.addObserver(forName: NSNotification.Name.NSMetadataQueryDidFinishGathering, object: query, queue: query.operationQueue) { [self] (notification) in
+    addQueryObserver(query, name: NSNotification.Name.NSMetadataQueryDidFinishGathering) { [self] _ in
       onDownloadQueryNotification(query: query, cloudFileURL: cloudFileURL, localFileURL: localFileURL, eventChannelName: eventChannelName)
     }
-    
-    NotificationCenter.default.addObserver(forName: NSNotification.Name.NSMetadataQueryDidUpdate, object: query, queue: query.operationQueue) { [self] (notification) in
+
+    addQueryObserver(query, name: NSNotification.Name.NSMetadataQueryDidUpdate) { [self] _ in
       onDownloadQueryNotification(query: query, cloudFileURL: cloudFileURL, localFileURL: localFileURL, eventChannelName: eventChannelName)
     }
   }
@@ -302,28 +346,38 @@ public class IcloudStorageSyncPlugin: NSObject, FlutterPlugin {
     if query.results.count == 0 {
       return
     }
-    
+
     guard let fileItem = query.results.first as? NSMetadataItem else { return }
     guard let fileURL = fileItem.value(forAttribute: NSMetadataItemURLKey) as? URL else { return }
     guard let fileURLValues = try? fileURL.resourceValues(forKeys: [.ubiquitousItemDownloadingErrorKey, .ubiquitousItemDownloadingStatusKey]) else { return }
     let streamHandler = self.streamHandlers[eventChannelName]
-    
+
     if let error = fileURLValues.ubiquitousItemDownloadingError {
       streamHandler?.setEvent(nativeCodeError(error))
+      streamHandler?.setEvent(FlutterEndOfEventStream)
+      removeObservers(query)
+      query.stop()
+      removeStreamHandler(eventChannelName)
       return
     }
-    
+
     if let progress = fileItem.value(forAttribute: NSMetadataUbiquitousItemPercentDownloadedKey) as? Double {
       streamHandler?.setEvent(progress)
     }
-    
+
     if fileURLValues.ubiquitousItemDownloadingStatus == URLUbiquitousItemDownloadingStatus.current {
       do {
         try moveCloudFile(at: cloudFileURL, to: localFileURL)
         streamHandler?.setEvent(FlutterEndOfEventStream)
+        removeObservers(query)
+        query.stop()
         removeStreamHandler(eventChannelName)
       } catch {
         streamHandler?.setEvent(nativeCodeError(error))
+        streamHandler?.setEvent(FlutterEndOfEventStream)
+        removeObservers(query)
+        query.stop()
+        removeStreamHandler(eventChannelName)
       }
     }
   }
@@ -449,11 +503,31 @@ private func delete(_ call: FlutterMethodCall, _ result: @escaping FlutterResult
     }
   }
 
+  private func addQueryObserver(
+    _ query: NSMetadataQuery,
+    name: NSNotification.Name,
+    using block: @escaping (Notification) -> Void
+  ) {
+    let token = NotificationCenter.default.addObserver(
+      forName: name,
+      object: query,
+      queue: query.operationQueue,
+      using: block
+    )
+    queryObservers[ObjectIdentifier(query), default: []].append(token)
+  }
+
   private func removeObservers(_ query: NSMetadataQuery) {
     NotificationCenter.default.removeObserver(self, name: NSNotification.Name.NSMetadataQueryDidFinishGathering, object: query)
     NotificationCenter.default.removeObserver(self, name: NSNotification.Name.NSMetadataQueryDidUpdate, object: query)
+    // Block-based observers are owned by the token the registration returns.
+    // Passing `self` here removed nothing, so every query stayed live and kept
+    // firing on the main queue for the rest of the session.
+    for token in queryObservers.removeValue(forKey: ObjectIdentifier(query)) ?? [] {
+      NotificationCenter.default.removeObserver(token)
+    }
   }
-  
+
   private func createEventChannel(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
     guard let args = call.arguments as? Dictionary<String, Any>,
           let eventChannelName = args["eventChannelName"] as? String
