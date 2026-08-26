@@ -370,11 +370,53 @@ class _IcloudScreenState extends State<IcloudScreen> {
               ),
             ],
           ),
+          children: [
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildDetailRow(
+                        "Relative Path", cloudFile.relativePath ?? "N/A"),
+                    _buildDetailRow("Local Path", cloudFile.filePath),
+                    _buildDetailRow("File Size",
+                        "${(cloudFile.sizeInBytes / 1024).toStringAsFixed(2)} KB"),
+                    _buildDetailRow("File Date",
+                        cloudFile.fileDate?.toLocal().toString() ?? "N/A"),
+                    _buildDetailRow("Last Sync Date",
+                        cloudFile.lastSyncDt?.toLocal().toString() ?? "N/A"),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       );
     });
   }
 
-  
- 
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "$label: ",
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(color: Colors.grey[700]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
