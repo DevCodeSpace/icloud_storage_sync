@@ -39,9 +39,13 @@ abstract class IcloudStorageSyncPlatform extends PlatformInterface {
   ///
   /// [containerId] is the iCloud Container Id.
   /// [onUpdate] is an optional callback for when the list of files is updated.
+  /// [relativePathPrefix] is an optional path prefix to filter results to a specific subdirectory.
+  /// [timeout] is an optional timeout duration for the metadata gathering operation.
   Future<List<ICloudFile>> gather({
     required String containerId,
     StreamHandler<List<ICloudFile>>? onUpdate,
+    String? relativePathPrefix,
+    Duration? timeout,
   }) async {
     throw UnimplementedError('gather() has not been implemented.');
   }
@@ -85,11 +89,10 @@ abstract class IcloudStorageSyncPlatform extends PlatformInterface {
   ///
   /// [containerId] is the iCloud Container Id.
   /// [relativePath] is the relative path of the file on iCloud.
-  Future<void> delete({
-    required String containerId,
-    required String relativePath,
-    required bool isDirectory
-  }) async {
+  Future<void> delete(
+      {required String containerId,
+      required String relativePath,
+      required bool isDirectory}) async {
     throw UnimplementedError('delete() has not been implemented.');
   }
 
