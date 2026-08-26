@@ -1,6 +1,6 @@
 name: icloud_storage_sync
 description: Easily sync and secure your app's data with the iCloud Sync Flutter plugin for seamless iCloud integration.
-version: 0.0.4
+version: 0.0.5
 homepage: https://github.com/DevCodeSpace/icloud_storage_sync
 issue_tracker: https://github.com/DevCodeSpace/icloud_storage_sync/issues
 documentation: https://pub.dev/documentation/icloud_storage_sync/latest/

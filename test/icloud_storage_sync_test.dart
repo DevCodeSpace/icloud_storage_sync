@@ -31,7 +31,9 @@ class MockIcloudStorageSyncPlatform
   @override
   Future<List<ICloudFile>> gather(
       {required String containerId,
-      StreamHandler<List<ICloudFile>>? onUpdate}) {
+      StreamHandler<List<ICloudFile>>? onUpdate,
+      String? relativePathPrefix,
+      Duration? timeout}) {
     throw UnimplementedError();
   }
 

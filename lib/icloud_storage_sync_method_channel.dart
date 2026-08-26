@@ -27,6 +27,8 @@ class MethodChannelIcloudStorageSync extends IcloudStorageSyncPlatform {
   Future<List<ICloudFile>> gather({
     required String containerId,
     StreamHandler<List<ICloudFile>>? onUpdate,
+    String? relativePathPrefix,
+    Duration? timeout,
   }) async {
     // Generate a unique event channel name if updates are requested
     final eventChannelName = onUpdate == null
@@ -54,6 +56,8 @@ class MethodChannelIcloudStorageSync extends IcloudStorageSyncPlatform {
         await methodChannel.invokeListMethod<Map<dynamic, dynamic>>('gather', {
       'containerId': containerId,
       'eventChannelName': eventChannelName,
+      if (relativePathPrefix != null) 'relativePathPrefix': relativePathPrefix,
+      if (timeout != null) 'timeoutMilliseconds': timeout.inMilliseconds,
     });
 
     return _mapFilesFromDynamicList(mapList);
@@ -152,11 +156,10 @@ class MethodChannelIcloudStorageSync extends IcloudStorageSyncPlatform {
   /// [containerId] is the iCloud container identifier.
   /// [relativePath] is the relative path of the file to delete in iCloud.
   @override
-  Future<void> delete({
-    required containerId,
-    required String relativePath,
-    required bool isDirectory
-  }) async {
+  Future<void> delete(
+      {required containerId,
+      required String relativePath,
+      required bool isDirectory}) async {
     await methodChannel.invokeMethod('delete', {
       'containerId': containerId,
       'cloudFileName': relativePath,
