@@ -35,6 +35,18 @@ abstract class IcloudStorageSyncPlatform extends PlatformInterface {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }
 
+  /// Returns the absolute path of the iCloud container URL.
+  Future<String?> getContainerUrl({required String containerId}) async {
+    throw UnimplementedError('getContainerUrl() has not been implemented.');
+  }
+
+  /// Determines whether iCloud is available for iCloud Drive Documents by checking the ubiquity identity token.
+  ///
+  /// Returns `true` when a token is present otherwise returns `false`.
+  Future<bool> isICloudAvailable() async {
+    throw UnimplementedError('isICloudAvailable() has not been implemented.');
+  }
+
   /// Gathers all the files' metadata from the iCloud container.
   ///
   /// [containerId] is the iCloud Container Id.
