@@ -27,6 +27,15 @@ public class IcloudStorageSyncPlugin: NSObject, FlutterPlugin {
          } else {
              result(FlutterError(code: "INVALID_ARGUMENT", message: "containerId not provided", details: nil))
          }
+    case "getICloudContainerUrl":
+      if let args = call.arguments as? [String: Any],
+         let containerId = args["containerId"] as? String {
+           getICloudContainerUrl(containerId: containerId, result: result)
+      } else {
+           result(FlutterError(code: "INVALID_ARGUMENT", message: "containerId not provided", details: nil))
+      }
+    case "isICloudAvailable":
+      isICloudAvailable(result)
     case "upload":
       upload(call, result)
     case "download":
@@ -246,8 +255,20 @@ public class IcloudStorageSyncPlugin: NSObject, FlutterPlugin {
     
     result(nil)
   }
-  
 
+  private func getICloudContainerUrl(containerId: String, result: @escaping FlutterResult) {
+    guard let containerURL = FileManager.default.url(forUbiquityContainerIdentifier: containerId) else {
+      result(containerError)
+      return
+    }
+    DebugHelper.log("containerURL: \(containerURL.path)")
+    result(containerURL.path)
+  }
+  
+  private func isICloudAvailable(_ result: @escaping FlutterResult) {
+    let isAvailable = FileManager.default.ubiquityIdentityToken != nil
+    result(isAvailable)
+  }
   
   private func addUploadObservers(query: NSMetadataQuery, eventChannelName: String) {
     addQueryObserver(query, name: NSNotification.Name.NSMetadataQueryDidFinishGathering) { [self] _ in
